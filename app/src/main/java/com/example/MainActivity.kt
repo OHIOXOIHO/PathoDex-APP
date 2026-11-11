@@ -161,25 +161,23 @@ private fun DeepLinkRouter(
 }
 
 /**
- * جهت‌گیری چیدمان را از روی زبان سیستم می‌گیرد.
+ * چیدمان همیشه راست‌به‌چپ است.
  *
- * زبان‌های راست‌به‌چپ (فارسی، عربی، عبری و ...) چیدمان راست‌به‌چپ می‌گیرند و بقیه
- * چپ‌به‌راست. چون همه‌ی اجزا از فاصله‌گذاری start/end استفاده می‌کنند، هر دو جهت
- * درست نمایش داده می‌شود.
+ * محتوای برنامه کاملاً فارسی است و زبان پیش‌فرض هم فارسی، پس چیدمان نباید به
+ * زبان دستگاه کاربر وابسته باشد. اگر به زبان سیستم گره بخورد، روی دستگاهی با
+ * زبان انگلیسی ترتیب دکمه‌ها برعکس، آیکون‌های جهت‌دار غلط و فاصله‌گذاری‌های
+ * start/end در جهت نادرست نمایش داده می‌شوند.
+ *
+ * متن‌های لاتین (نام‌های علمی، سرده‌ها، نشانی‌ها) جداگانه با
+ * [com.example.ui.components.PdLtrText] در جهت خودشان قرار می‌گیرند.
  */
 @Composable
 private fun ProvideAppDirection(content: @Composable () -> Unit) {
-    val rtl = remember {
-        val lang = java.util.Locale.getDefault().language
-        lang in RtlLanguages
-    }
     CompositionLocalProvider(
-        LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
+        LocalLayoutDirection provides LayoutDirection.Rtl,
         content = content
     )
 }
-
-private val RtlLanguages = setOf("fa", "ar", "he", "ur", "ps", "sd", "ug", "yi", "ckb", "dv")
 
 @Composable
 fun PathodexApp(viewModel: PathodexViewModel) {
@@ -249,6 +247,9 @@ fun PathodexApp(viewModel: PathodexViewModel) {
             lightboxUrl != null -> viewModel.closeLightbox()
             selectedDossier != null -> viewModel.closeDossier()
             filterSheetVisible -> viewModel.setFilterSheetVisible(false)
+            // درخت تاکسونومی یک overlay تمام‌صفحه است؛ بازگشت باید آن را ببندد،
+            // وگرنه کاربر روی تب تنظیمات گیر می‌کند و نمی‌تواند به فهرست برگردد.
+            taxonomyScreenVisible -> viewModel.setTaxonomyScreenVisible(false)
             currentTab != NavTab.EXPLORER -> viewModel.setTab(NavTab.EXPLORER)
             else -> showExitDialog = true
         }
