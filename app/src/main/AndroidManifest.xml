@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.MyApplication">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            پیوندهای عمیق سامانه‌ی وب (Android App Links) در یک activity-alias جدا
+            تعریف شده‌اند تا کاربر بتواند با یک کلید در تنظیمات، باز کردن
+            پیوندهای pathodex.ir را به اپلیکیشن بسپارد یا نه.
+            بدون این کلید، همین پیوندها در مرورگر وب باز می‌شوند و اپلیکیشن
+            دست‌نخورده می‌ماند — یعنی کاربر انتخاب می‌کند، نه نصب اپلیکیشن.
+        -->
+        <activity-alias
+            android:name=".DeepLink"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:targetActivity=".MainActivity">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/disease" />
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/category" />
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/taxonomy" />
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/study" />
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/quiz" />
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/compare" />
+                <data
+                    android:scheme="https"
+                    android:host="pathodex.ir"
+                    android:pathPrefix="/about" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+
+</manifest>

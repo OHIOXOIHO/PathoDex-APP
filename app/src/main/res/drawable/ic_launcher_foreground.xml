@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Centered within 66dp zone: from (21,21) to (87,87), center is (54,54) -->
+    <!-- Hexagonal shield border -->
+    <path
+        android:pathData="M54,23 L79,37 L79,67 L54,83 L29,67 L29,37 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#F43F5E"
+        android:fillColor="#22E11D48" />
+
+    <!-- Microscope / Pathogen Symbol in center -->
+    <path
+        android:pathData="M51,33 L57,33 L57,48 L51,48 Z"
+        android:fillColor="#FFFFFF" />
+    <path
+        android:pathData="M48,31 L60,31 L60,34 L48,34 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Arm & Revolving Nosepiece -->
+    <path
+        android:pathData="M57,41 C63,41 68,46 68,53 C68,59 64,64 58,66 L58,70 L64,70 L64,73 L44,73 L44,70 L52,70 L52,65.5 C49.5,64.5 48,62 48,59 L54,59 C54,61 56,62.5 58,62.5 C61.5,62.5 64,58 64,53 C64,48 60,45 56,45 L54,45 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Stage & Slide -->
+    <path
+        android:pathData="M42,57 L58,57 L58,60 L42,60 Z"
+        android:fillColor="#F43F5E" />
+
+    <!-- Objective Lens -->
+    <path
+        android:pathData="M52,48 L56,48 L55,53 L53,53 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Glowing Pathogen Accent Dots -->
+    <path
+        android:pathData="M38,44 A2.5,2.5 0 1,0 38,49 A2.5,2.5 0 1,0 38,44 Z"
+        android:fillColor="#F43F5E" />
+    <path
+        android:pathData="M70,44 A2,2 0 1,0 70,48 A2,2 0 1,0 70,44 Z"
+        android:fillColor="#FB7185" />
+    <path
+        android:pathData="M37,62 A1.8,1.8 0 1,0 37,65.6 A1.8,1.8 0 1,0 37,62 Z"
+        android:fillColor="#FB7185" />
+</vector>
