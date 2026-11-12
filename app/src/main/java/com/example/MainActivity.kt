@@ -459,7 +459,7 @@ fun PathodexApp(viewModel: PathodexViewModel) {
                     onResetPassword = { email, code, newPass, onSuccess, onError ->
                         viewModel.resetPasswordPublic(email, code, newPass, onSuccess, onError)
                     },
-                    onGoogleLogin = GoogleLoginRequester { onSuccess, onError ->
+                    onGoogleLogin = GoogleLoginRequester { onSuccess, onError, onCancel ->
                         val activity = context as? Activity
                         if (activity == null) {
                             onError("برای ورود با گوگل به پنجره‌ی برنامه نیاز است")
@@ -471,20 +471,18 @@ fun PathodexApp(viewModel: PathodexViewModel) {
                                     },
                                     onFailure = { e ->
                                         val googleError = e as? GoogleAuthHelper.GoogleSignInException
-                                        onError(
-                                            buildString {
-                                                append(
-                                                    googleError?.message
-                                                        ?: e.message
-                                                        ?: "ورود با گوگل ناموفق بود"
-                                                )
-                                                if (googleError != null) {
-                                                    append("\n\n")
-                                                    append(googleError.diagnostics)
-                                                    append("\n\nبا نام کاربری و رمز عبور هم می‌توانید وارد شوید.")
-                                                }
-                                            }
-                                        )
+                                        // بستن انتخابگر توسط کاربر خطا نیست؛ چیزی نشان داده نمی‌شود
+                                        if (googleError?.kind == GoogleAuthHelper.FailureKind.CANCELLED) {
+                                            onCancel()
+                                        } else {
+                                            val headline = googleError?.message
+                                                ?: e.message
+                                                ?: "ورود با گوگل ناموفق بود"
+                                            onError(
+                                                headline + "\n\n" +
+                                                    "می‌توانید با نام کاربری و رمز عبور هم وارد شوید."
+                                            )
+                                        }
                                     }
                                 )
                             }

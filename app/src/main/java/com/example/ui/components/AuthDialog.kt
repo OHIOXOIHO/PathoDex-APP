@@ -72,6 +72,8 @@ import com.example.data.model.User
 import com.example.ui.theme.AmberBookmark
 import com.example.ui.theme.CrimsonPrimary
 import com.example.ui.theme.EmeraldLearned
+import com.example.ui.theme.Pd
+import com.example.ui.theme.PdSize
 import com.example.ui.theme.PdSpacing
 import com.example.ui.theme.PdShapes
 import com.example.ui.theme.PdType
@@ -85,7 +87,12 @@ private enum class AuthMode { LOGIN, REGISTER, FORGOT }
  * چون آرگومان‌های نام‌دار روی نوع‌های تابع مجاز نیستند.
  */
 fun interface GoogleLoginRequester {
-    fun request(onSuccess: () -> Unit, onError: (String) -> Unit)
+    /**
+     * @param onSuccess ورود کامل شد.
+     * @param onError ورود ناموفق بود و [String] پیام قابل‌نمایش است.
+     * @param onCancel کاربر انتخابگر را بست یا پشت برد؛ نباید خطایی نشان داده شود.
+     */
+    fun request(onSuccess: () -> Unit, onError: (String) -> Unit, onCancel: () -> Unit)
 }
 
 @Composable
@@ -96,7 +103,7 @@ fun AuthDialog(
     onRegister: (String, String, String?, () -> Unit, (String) -> Unit) -> Unit,
     onForgotPassword: (String, (String?) -> Unit, (String) -> Unit) -> Unit,
     onResetPassword: (String, String, String, (String?) -> Unit, (String) -> Unit) -> Unit,
-    onGoogleLogin: GoogleLoginRequester = GoogleLoginRequester { success, _ -> success() }
+    onGoogleLogin: GoogleLoginRequester = GoogleLoginRequester { success, _, _ -> success() }
 ) {
     var mode by remember { mutableStateOf(AuthMode.LOGIN) }
     var username by remember { mutableStateOf("") }
@@ -107,6 +114,9 @@ fun AuthDialog(
     var codeSent by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    // دریافت نشانه‌ی گوگل (و انتظار برای باز شدن انتخابگر حساب) را جدا نشان
+    // می‌دهیم تا روی اولین تلاش — که Play Services سرد است — دکمه خاموش نماند.
+    var googleLoading by remember { mutableStateOf(false) }
 
     fun resetError() {
         errorMessage = null
@@ -519,7 +529,7 @@ fun AuthDialog(
                 ) {
                     Surface(
                         shape = PdShapes.md,
-                        color = CrimsonPrimary.copy(alpha = 0.1f),
+                        color = Pd.palette.errorContainer,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = PdSpacing.compact)
@@ -532,15 +542,15 @@ fun AuthDialog(
                             Icon(
                                 imageVector = Icons.Default.ErrorOutline,
                                 contentDescription = null,
-                                tint = CrimsonPrimary,
-                                modifier = Modifier.size(18.dp)
+                                tint = Pd.palette.error,
+                                modifier = Modifier.size(PdSize.iconSm)
                             )
                             Text(
                                 text = errorMessage ?: "",
-                                color = CrimsonPrimary,
+                                color = Pd.palette.onErrorContainer,
                                 fontSize = PdType.sp11_5,
                                 fontWeight = FontWeight.Medium,
-                                maxLines = 8,
+                                maxLines = 10,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f)
                             )
@@ -654,11 +664,21 @@ fun AuthDialog(
                 // ورود سریع با گوگل (فقط در حالت‌های ورود و ثبت‌نام)
                 if (mode != AuthMode.FORGOT) {
                     PdGoogleButton(
-                        isLoading = isLoading,
+                        isLoading = googleLoading || isLoading,
                         onClick = {
+                            resetError()
+                            googleLoading = true
                             onGoogleLogin.request(
-                                onSuccess = { onDismiss() },
-                                onError = { errorMessage = it }
+                                onSuccess = {
+                                    googleLoading = false
+                                    onDismiss()
+                                },
+                                onError = { message ->
+                                    googleLoading = false
+                                    errorMessage = message
+                                },
+                                // لغو کاربر خطا نیست؛ فقط دکمه دوباره فعال می‌شود
+                                onCancel = { googleLoading = false }
                             )
                         },
                         modifier = Modifier

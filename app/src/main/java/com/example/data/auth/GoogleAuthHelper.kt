@@ -19,6 +19,8 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.security.MessageDigest
 import java.security.SecureRandom
 
@@ -81,7 +83,11 @@ object GoogleAuthHelper {
      * @param activity لازم است چون انتخابگر حساب در قالب یک Activity نمایش داده می‌شود.
      */
     suspend fun signIn(activity: Activity): Result<String> {
-        val playServicesOk = isPlayServicesAvailable(activity)
+        // بررسی Google Play Services کار دیسکی است؛ روی نخ اصلی اجرا نشود تا
+        // روی اولین فراخوانی (یعنی سرد شدن Play Services) رابط کاربری متوقف نشود.
+        val playServicesOk = withContext(Dispatchers.IO) {
+            isPlayServicesAvailable(activity)
+        }
         if (!playServicesOk) {
             return Result.failure(
                 GoogleSignInException(
@@ -125,6 +131,7 @@ object GoogleAuthHelper {
         } catch (e: NoCredentialException) {
             // این خطا معمولاً یعنی اپلیکیشن در Google Cloud ثبت نشده است،
             // نه اینکه روی دستگاه حسابی وجود نداشته باشد.
+            Log.w(TAG, "No credential returned for the registered web client", e)
             Result.failure(
                 GoogleSignInException(
                     FailureKind.NOT_REGISTERED,
