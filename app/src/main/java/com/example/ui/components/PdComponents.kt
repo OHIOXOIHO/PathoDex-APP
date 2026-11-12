@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,11 +35,14 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +60,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.Pd
+import com.example.ui.theme.PdMotion
 import com.example.ui.theme.PdRadius
 import com.example.ui.theme.PdShapes
 import com.example.ui.theme.PdSize
@@ -533,6 +540,97 @@ fun PdStatusPill(
             modifier = Modifier.padding(horizontal = PdSpacing.md, vertical = PdSpacing.xs)
         )
     }
+}
+
+/**
+ * چیپ فیلتر سامانه با رنگ‌های زنده و تغییر نرم حالت.
+ *
+ * چیپ‌های پیش‌فرض Material 3 در حالت غیرفعال معمولاً روی `surfaceVariant` با
+ * حاشیه‌ی کم‌رنگ نشسته و با رنگ خاکستری نمایش داده می‌شوند که دشدار به نظر
+ * می‌رسد؛ و چون رنگ‌ها به‌صورت ثابت اعمال می‌شوند، رفتن/آمدن حالت انتخاب
+ * یک‌باره و بدون انتقال نرم عوض می‌شود.
+ *
+ * اینجا هر سه رنگ (زمینه، محتوا، حاشیه) با [animateColorAsState] نرم جابه‌جا
+ * می‌شوند و حالت انتخاب‌شده با رنگ برند (یا [accent] دلخواه) و حاشیه‌ی هم‌رنگ
+ * مشخص می‌شود.
+ */
+@Composable
+fun PdFilterChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    accent: Color = MaterialTheme.colorScheme.primary
+) {
+    val outline = MaterialTheme.colorScheme.outline
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val surface = MaterialTheme.colorScheme.surface
+
+    val container by animateColorAsState(
+        targetValue = if (selected) accent.copy(alpha = 0.18f) else surface,
+        animationSpec = tween(PdMotion.fast),
+        label = "chipContainer"
+    )
+    val content by animateColorAsState(
+        targetValue = if (selected) accent else onSurfaceVariant,
+        animationSpec = tween(PdMotion.fast),
+        label = "chipContent"
+    )
+    val border by animateColorAsState(
+        targetValue = if (selected) accent.copy(alpha = 0.9f) else outline.copy(alpha = 0.7f),
+        animationSpec = tween(PdMotion.fast),
+        label = "chipBorder"
+    )
+
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = label,
+        modifier = modifier,
+        leadingIcon = leadingIcon,
+        shape = PdShapes.md,
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = container,
+            labelColor = content,
+            iconColor = content,
+            selectedContainerColor = container,
+            selectedLabelColor = content,
+            selectedLeadingIconColor = content
+        ),
+        border = BorderStroke(1.dp, border)
+    )
+}
+
+/**
+ * کلید کشویی سامانه.
+ *
+ * حالت روشن با رنگ برند، حالت خاموش با حاشیه‌ی قابل‌مشاهده و دسته‌ای روشن تا
+ * کلید هرگز «خاکستری و مرده» دیده نشود.
+ */
+@Composable
+fun PdSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    val isDark = Pd.palette.isDark
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        enabled = enabled,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+            checkedTrackColor = MaterialTheme.colorScheme.primary,
+            checkedBorderColor = MaterialTheme.colorScheme.primary,
+            uncheckedThumbColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant
+            else MaterialTheme.colorScheme.surface,
+            uncheckedTrackColor = MaterialTheme.colorScheme.outline,
+            uncheckedBorderColor = MaterialTheme.colorScheme.outline
+        )
+    )
 }
 
 /**

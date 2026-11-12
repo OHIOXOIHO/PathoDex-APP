@@ -55,7 +55,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.Disease
 import com.example.data.model.User
+import com.example.ui.components.PdSwitch
 import com.example.ui.theme.CrimsonPrimary
 import com.example.ui.theme.EmeraldLearned
 import com.example.ui.theme.ThemeAccent
@@ -521,13 +521,9 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.width(PdSpacing.compact))
 
-                    Switch(
+                    PdSwitch(
                         checked = blurImages,
-                        onCheckedChange = { onToggleBlur() },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = CrimsonPrimary
-                        )
+                        onCheckedChange = { onToggleBlur() }
                     )
                 }
             }
@@ -567,13 +563,9 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.width(PdSpacing.compact))
 
-                Switch(
+                PdSwitch(
                     checked = deepLinksEnabled,
-                    onCheckedChange = onSetDeepLinksEnabled,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = CrimsonPrimary
-                    )
+                    onCheckedChange = onSetDeepLinksEnabled
                 )
             }
         }

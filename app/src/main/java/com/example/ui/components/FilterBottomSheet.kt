@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,15 +25,12 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -40,13 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.data.model.TaxonomyRefs
 import com.example.ui.theme.AmberBookmark
 import com.example.ui.theme.CrimsonPrimary
 import com.example.ui.theme.EmeraldLearned
+import com.example.ui.theme.PdMotion
 import com.example.ui.theme.PdShapes
+import com.example.ui.theme.PdSize
 import com.example.ui.theme.PdSpacing
 import com.example.ui.theme.PdType
 import com.example.ui.viewmodel.InteractionFilter
@@ -86,6 +85,8 @@ fun FilterBottomSheet(
                 // نوار سیستم پایین را حساب می‌کنیم تا دکمه‌های پایانی زیر آن پنهان نشوند
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(bottom = PdSpacing.xl)
+                // وقتی فیلترهای تاکسونومی اضافه/حذف می‌شوند، نرم باز و بسته شود
+                .animateContentSize(tween(PdMotion.normal))
         ) {
             // Header
             Row(
@@ -101,7 +102,7 @@ fun FilterBottomSheet(
                         imageVector = Icons.Default.FilterList,
                         contentDescription = null,
                         tint = CrimsonPrimary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(PdSize.iconMd)
                     )
                     Text(
                         text = "فیلتر و مرتب‌سازی",
@@ -111,8 +112,13 @@ fun FilterBottomSheet(
                     )
                 }
 
-                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Close, contentDescription = "بستن", modifier = Modifier.size(18.dp))
+                // هدف لمسی ۴۸dp حفظ می‌شود؛ فقط اندازه‌ی آیکون از مختصن می‌آید
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "بستن",
+                        modifier = Modifier.size(PdSize.iconSm)
+                    )
                 }
             }
 
@@ -133,27 +139,24 @@ fun FilterBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
             ) {
-                FilterChip(
+                PdFilterChip(
                     selected = selectedSort == SortOrder.DATE_DESC,
                     onClick = { onSortChange(SortOrder.DATE_DESC) },
                     label = { Text("جدیدترین", fontSize = PdType.sp11_5, maxLines = 1) },
-                    shape = PdShapes.md,
                     modifier = Modifier.weight(1f)
                 )
 
-                FilterChip(
+                PdFilterChip(
                     selected = selectedSort == SortOrder.NAME_ASC,
                     onClick = { onSortChange(SortOrder.NAME_ASC) },
                     label = { Text("الفبای نام", fontSize = PdType.sp11_5, maxLines = 1) },
-                    shape = PdShapes.md,
                     modifier = Modifier.weight(1f)
                 )
 
-                FilterChip(
+                PdFilterChip(
                     selected = selectedSort == SortOrder.AGENT_ASC,
                     onClick = { onSortChange(SortOrder.AGENT_ASC) },
                     label = { Text("الفبای عامل", fontSize = PdType.sp11_5, maxLines = 1) },
-                    shape = PdShapes.md,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -175,25 +178,25 @@ fun FilterBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
             ) {
-                FilterChip(
+                PdFilterChip(
                     selected = interactionFilter == InteractionFilter.ALL,
                     onClick = { onInteractionChange(InteractionFilter.ALL) },
                     label = { Text("همه پاتوژن‌ها", fontSize = PdType.sp11_5, maxLines = 1) },
-                    shape = PdShapes.md,
                     modifier = Modifier.weight(1f)
                 )
 
-                FilterChip(
+                PdFilterChip(
                     selected = interactionFilter == InteractionFilter.FAVORITES,
                     onClick = { onInteractionChange(InteractionFilter.FAVORITES) },
                     label = { Text("علاقه‌مندی‌ها", fontSize = PdType.sp11_5, maxLines = 1) },
-                    leadingIcon = { Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(15.dp)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CrimsonPrimary.copy(alpha = 0.15f),
-                        selectedLabelColor = CrimsonPrimary,
-                        selectedLeadingIconColor = CrimsonPrimary
-                    ),
-                    shape = PdShapes.md,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Favorite,
+                            contentDescription = null,
+                            modifier = Modifier.size(PdSize.iconXs)
+                        )
+                    },
+                    accent = CrimsonPrimary,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -205,31 +208,33 @@ fun FilterBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
             ) {
-                FilterChip(
+                PdFilterChip(
                     selected = interactionFilter == InteractionFilter.BOOKMARKS,
                     onClick = { onInteractionChange(InteractionFilter.BOOKMARKS) },
                     label = { Text("نشان‌شده‌ها", fontSize = PdType.sp11_5, maxLines = 1) },
-                    leadingIcon = { Icon(Icons.Default.Bookmark, contentDescription = null, modifier = Modifier.size(15.dp)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = AmberBookmark.copy(alpha = 0.15f),
-                        selectedLabelColor = AmberBookmark,
-                        selectedLeadingIconColor = AmberBookmark
-                    ),
-                    shape = PdShapes.md,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Bookmark,
+                            contentDescription = null,
+                            modifier = Modifier.size(PdSize.iconXs)
+                        )
+                    },
+                    accent = AmberBookmark,
                     modifier = Modifier.weight(1f)
                 )
 
-                FilterChip(
+                PdFilterChip(
                     selected = interactionFilter == InteractionFilter.LEARNED,
                     onClick = { onInteractionChange(InteractionFilter.LEARNED) },
                     label = { Text("آموخته‌شده", fontSize = PdType.sp11_5, maxLines = 1) },
-                    leadingIcon = { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(15.dp)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = EmeraldLearned.copy(alpha = 0.18f),
-                        selectedLabelColor = EmeraldLearned,
-                        selectedLeadingIconColor = EmeraldLearned
-                    ),
-                    shape = PdShapes.md,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(PdSize.iconXs)
+                        )
+                    },
+                    accent = EmeraldLearned,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -261,7 +266,9 @@ fun FilterBottomSheet(
                         )
                     }
 
-                    Switch(
+                    Spacer(modifier = Modifier.size(PdSpacing.sm))
+
+                    PdSwitch(
                         checked = hideLearned,
                         onCheckedChange = { onToggleHideLearned() }
                     )
@@ -295,14 +302,13 @@ fun FilterBottomSheet(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
                     ) {
-                        FilterChip(
+                        PdFilterChip(
                             selected = txFilter == null,
                             onClick = { onTxFilterChange(null) },
-                            label = { Text("همه", fontSize = PdType.sp11, maxLines = 1) },
-                            shape = PdShapes.md
+                            label = { Text("همه", fontSize = PdType.sp11, maxLines = 1) }
                         )
                         refs.transmission_routes.forEach { route ->
-                            FilterChip(
+                            PdFilterChip(
                                 selected = txFilter == route.slug,
                                 onClick = { onTxFilterChange(route.slug) },
                                 label = {
@@ -314,8 +320,7 @@ fun FilterBottomSheet(
                                         fontSize = PdType.sp11,
                                         maxLines = 1
                                     )
-                                },
-                                shape = PdShapes.md
+                                }
                             )
                         }
                     }
@@ -335,14 +340,13 @@ fun FilterBottomSheet(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
                     ) {
-                        FilterChip(
+                        PdFilterChip(
                             selected = hostFilter == null,
                             onClick = { onHostFilterChange(null) },
-                            label = { Text("همه", fontSize = PdType.sp11, maxLines = 1) },
-                            shape = PdShapes.md
+                            label = { Text("همه", fontSize = PdType.sp11, maxLines = 1) }
                         )
                         refs.host_groups.forEach { host ->
-                            FilterChip(
+                            PdFilterChip(
                                 selected = hostFilter == host.slug,
                                 onClick = { onHostFilterChange(host.slug) },
                                 label = {
@@ -354,8 +358,7 @@ fun FilterBottomSheet(
                                         fontSize = PdType.sp11,
                                         maxLines = 1
                                     )
-                                },
-                                shape = PdShapes.md
+                                }
                             )
                         }
                     }
@@ -381,11 +384,10 @@ fun FilterBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
                     ) {
                         scopes.forEach { (slug, label) ->
-                            FilterChip(
+                            PdFilterChip(
                                 selected = scopeFilter == slug,
                                 onClick = { onScopeFilterChange(slug) },
                                 label = { Text(label, fontSize = PdType.sp11, maxLines = 1) },
-                                shape = PdShapes.md,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -402,20 +404,31 @@ fun FilterBottomSheet(
             ) {
                 OutlinedButton(
                     onClick = { onResetFilters(); onDismiss() },
-                    shape = PdShapes.md,
-                    modifier = Modifier.weight(1f).height(46.dp)
+                    modifier = Modifier.weight(1f).height(PdSize.buttonHeight)
                 ) {
-                    Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Text("پاکسازی", fontSize = PdType.sp12, modifier = Modifier.padding(start = PdSpacing.tight))
+                    Icon(
+                        Icons.Default.DeleteSweep,
+                        contentDescription = null,
+                        modifier = Modifier.size(PdSize.iconSm)
+                    )
+                    Text(
+                        "پاکسازی",
+                        fontSize = PdType.sp12,
+                        modifier = Modifier.padding(start = PdSpacing.tight)
+                    )
                 }
 
                 Button(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = CrimsonPrimary),
-                    shape = PdShapes.md,
-                    modifier = Modifier.weight(1f).height(46.dp)
+                    modifier = Modifier.weight(1f).height(PdSize.buttonHeight)
                 ) {
-                    Text("تایید", fontSize = PdType.sp12_5, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        "تایید",
+                        fontSize = PdType.sp12_5,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
         }
