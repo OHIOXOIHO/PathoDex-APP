@@ -2,11 +2,14 @@ package com.example.ui.screens
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +29,8 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,17 +47,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.data.model.Disease
 import com.example.data.model.TaxCategoryNode
-import com.example.data.model.TaxClassNode
 import com.example.data.model.TaxEntry
-import com.example.data.model.TaxFamilyNode
 import com.example.data.model.buildTaxonomyTree
 import com.example.data.model.flatten
 import com.example.data.model.normalizeTaxonomyKey
@@ -110,113 +114,34 @@ fun TaxonomyScreen(
 
     val rows = flatten(tree, expanded)
 
-    val totalCategories = tree.size
-    val totalClasses = tree.sumOf { it.classes.size }
-    val totalFamilies = tree.sumOf { c -> c.classes.sumOf { it.families.size } }
-
     Column(
         modifier = modifier
             .fillMaxSize()
             .testTag("taxonomy_screen")
     ) {
-        // ── هدر و جستجو (چسبان) ────────────────────────────────────────────
-        Column(modifier = Modifier.padding(horizontal = PdSpacing.lg)) {
-            Spacer(modifier = Modifier.height(PdSpacing.sm))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(PdShapes.md)
-                        .background(CrimsonPrimary.copy(alpha = 0.14f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountTree,
-                        contentDescription = null,
-                        tint = CrimsonPrimary,
-                        modifier = Modifier.size(PdSize.iconMd)
-                    )
-                }
-                Column {
-                    Text(
-                        text = "درخت تاکسونومی",
-                        fontSize = PdType.sp17,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "ساختار سلسله‌مراتبی دسته، رده و خانواده عوامل بیماری‌زا",
-                        fontSize = PdType.sp11,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(PdSpacing.md))
-
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                placeholder = {
-                    Text(
-                        text = "جستجو در دسته، رده، خانواده، سرده یا نام پاتوژن...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = null,
-                        tint = CrimsonPrimary,
-                        modifier = Modifier.size(PdSize.iconMd)
-                    )
-                },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { query = "" }) {
-                            Icon(
-                                Icons.Default.Clear,
-                                contentDescription = "پاک کردن",
-                                modifier = Modifier.size(PdSize.iconSm)
-                            )
-                        }
+        TaxonomyHeader(
+            query = query,
+            onQueryChange = { query = it },
+            tree = tree,
+            onExpandAll = {
+                tree.forEach { cat ->
+                    expanded[cat.key] = true
+                    cat.classes.forEach { cls ->
+                        expanded[cls.key] = true
+                        cls.families.forEach { fam -> expanded[fam.key] = true }
                     }
-                },
-                singleLine = true,
-                shape = PdShapes.md,
-                textStyle = MaterialTheme.typography.bodyMedium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CrimsonPrimary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(PdSize.searchFieldHeight)
-                    .testTag("taxonomy_search_input")
-            )
-
-            Spacer(modifier = Modifier.height(PdSpacing.sm))
-
-            // ── آمار کلی ──────────────────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
-            ) {
-                StatPill("دسته‌ها", totalCategories, Modifier.weight(1f))
-                StatPill("رده‌ها", totalClasses, Modifier.weight(1f))
-                StatPill("خانواده‌ها", totalFamilies, Modifier.weight(1f))
+                }
+            },
+            onCollapseAll = {
+                tree.forEach { cat ->
+                    expanded[cat.key] = false
+                    cat.classes.forEach { cls ->
+                        expanded[cls.key] = false
+                        cls.families.forEach { fam -> expanded[fam.key] = false }
+                    }
+                }
             }
-
-            Spacer(modifier = Modifier.height(PdSpacing.sm))
-        }
+        )
 
         // ── درخت ───────────────────────────────────────────────────────────
         if (rows.isEmpty()) {
@@ -247,23 +172,31 @@ fun TaxonomyScreen(
                             }
                         )
 
-                        is TaxEntry.Class -> ClassNodeRow(
-                            node = row.node,
+                        is TaxEntry.Class -> TreeNodeRow(
+                            depth = row.depth,
+                            title = row.node.titleFa,
+                            subtitle = row.node.titleEn,
+                            count = row.node.diseases.size,
                             isExpanded = expanded[row.nodeKey] == true,
                             onToggle = {
                                 expanded[row.nodeKey] = !(expanded[row.nodeKey] ?: false)
-                            }
+                            },
+                            tag = "tax_class_${row.node.key}"
                         )
 
-                        is TaxEntry.Family -> FamilyNodeRow(
-                            node = row.node,
+                        is TaxEntry.Family -> TreeNodeRow(
+                            depth = row.depth,
+                            title = row.node.titleFa,
+                            subtitle = row.node.titleEn,
+                            count = row.node.diseases.size,
                             isExpanded = expanded[row.nodeKey] == true,
                             onToggle = {
                                 expanded[row.nodeKey] = !(expanded[row.nodeKey] ?: false)
-                            }
+                            },
+                            tag = "tax_family_${row.node.key}"
                         )
 
-                        is TaxEntry.Pathogen -> DiseaseRow(
+                        is TaxEntry.Pathogen -> PathogenNodeRow(
                             disease = row.disease,
                             onClick = { onOpenDossier(row.disease) }
                         )
@@ -275,36 +208,178 @@ fun TaxonomyScreen(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// اجزای ردیف
+// هدر: عنوان، جستجو و خلاصه‌ی شمارش‌ها
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun StatPill(label: String, count: Int, modifier: Modifier = Modifier) {
-    Surface(
-        shape = PdShapes.md,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(vertical = PdSpacing.sm, horizontal = PdSpacing.xs),
-            horizontalAlignment = Alignment.CenterHorizontally
+private fun TaxonomyHeader(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    tree: List<TaxCategoryNode>,
+    onExpandAll: () -> Unit,
+    onCollapseAll: () -> Unit
+) {
+    val totalCategories = tree.size
+    val totalClasses = tree.sumOf { it.classes.size }
+    val totalFamilies = tree.sumOf { c -> c.classes.sumOf { it.families.size } }
+    val totalPathogens = tree.sumOf { it.diseases.size }
+
+    Column(modifier = Modifier.padding(horizontal = PdSpacing.lg)) {
+        Spacer(modifier = Modifier.height(PdSpacing.sm))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
         ) {
-            Text(
-                text = count.toString(),
-                fontSize = PdType.sp14,
-                fontWeight = FontWeight.Black,
-                color = CrimsonPrimary
-            )
-            Text(
-                text = label,
-                fontSize = PdType.sp10,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Box(
+                modifier = Modifier
+                    .size(PdSize.iconTile)
+                    .clip(PdShapes.md)
+                    .background(CrimsonPrimary.copy(alpha = 0.14f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountTree,
+                    contentDescription = null,
+                    tint = CrimsonPrimary,
+                    modifier = Modifier.size(PdSize.iconMd)
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "درخت تاکسونومی",
+                    fontSize = PdType.sp16,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "دسته › رده › خانواده › پاتوژن",
+                    fontSize = PdType.sp11,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            // باز کردن/بستن همه‌ی شاخه‌ها — مثل درخت‌نمای سیستم‌عامل
+            IconButton(onClick = onCollapseAll) {
+                Icon(
+                    imageVector = Icons.Default.UnfoldLess,
+                    contentDescription = "بستن همه",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(PdSize.iconSm)
+                )
+            }
+            IconButton(onClick = onExpandAll) {
+                Icon(
+                    imageVector = Icons.Default.UnfoldMore,
+                    contentDescription = "باز کردن همه",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(PdSize.iconSm)
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(PdSpacing.md))
+
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = {
+                Text(
+                    text = "جستجو در دسته، رده، خانواده، سرده یا نام پاتوژن...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    tint = CrimsonPrimary,
+                    modifier = Modifier.size(PdSize.iconMd)
+                )
+            },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }) {
+                        Icon(
+                            Icons.Default.Clear,
+                            contentDescription = "پاک کردن",
+                            modifier = Modifier.size(PdSize.iconSm)
+                        )
+                    }
+                }
+            },
+            singleLine = true,
+            shape = PdShapes.md,
+            textStyle = MaterialTheme.typography.bodyMedium,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = CrimsonPrimary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(PdSize.searchFieldHeight)
+                .testTag("taxonomy_search_input")
+        )
+
+        Spacer(modifier = Modifier.height(PdSpacing.sm))
+
+        // خلاصه‌ی یک‌خطی به‌جای سه کارت آماری — فضای کمتری می‌گیرد و یک‌جا خوانده می‌شود
+        Text(
+            text = "$totalPathogens پاتوژن · $totalCategories دسته · $totalClasses رده · $totalFamilies خانواده",
+            fontSize = PdType.sp11,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(PdSpacing.sm))
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ردیف‌های درخت
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * ریل عمودی درخت.
+ *
+ * برای هر سطح والد یک خط عمودی کشیده می‌شود و یک اتصال افقی به نشانگر همین
+ * گره می‌رسد، مثل درخت‌نمای سیستم‌عامل. در چیدمان راست‌به‌چپ ریل در سمت راست
+ * قرار می‌گیرد و شاخه‌ها به سمت چپ تورفتگی می‌گیرند.
+ */
+@Composable
+private fun TreeRail(depth: Int, color: Color) {
+    Canvas(modifier = Modifier.width(PdSpacing.treeIndent * depth)) {
+        val step = PdSpacing.treeIndent.toPx()
+        val stroke = 1.dp.toPx()
+
+        // خط عمودی هر سطح والد — از لبه‌ی start (راست در راست‌به‌چپ) شمرده می‌شود
+        for (i in 0 until depth) {
+            val x = size.width - (i * step + step / 2f)
+            drawLine(
+                color = color,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = stroke
+            )
+        }
+
+        // اتصال افقی از ریل والد به نشانگر این گره
+        val y = size.height / 2f
+        val xParent = size.width - ((depth - 1) * step + step / 2f)
+        drawLine(
+            color = color,
+            start = Offset(xParent, y),
+            end = Offset(size.width, y),
+            strokeWidth = stroke
+        )
+    }
+}
+
+/** گره‌ی دسته — ریشه‌ی درخت، با کارت مشخص تا از شاخه‌ها جدا دیده شود. */
 @Composable
 private fun CategoryNodeRow(
     node: TaxCategoryNode,
@@ -314,10 +389,7 @@ private fun CategoryNodeRow(
     Surface(
         shape = PdShapes.lg,
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
-        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = PdSpacing.xs)
@@ -326,19 +398,19 @@ private fun CategoryNodeRow(
             .testTag("tax_category_${node.key}")
     ) {
         Row(
-            modifier = Modifier.padding(PdSpacing.cozy),
+            modifier = Modifier.padding(PdSpacing.md),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
         ) {
             Icon(
                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (isExpanded) CrimsonPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(PdSize.iconMd)
             )
             Text(
                 text = node.title,
-                fontSize = PdType.sp13_5,
+                fontSize = PdType.sp14,
                 fontWeight = FontWeight.Black,
                 color = if (isExpanded) CrimsonPrimary else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -350,153 +422,119 @@ private fun CategoryNodeRow(
     }
 }
 
+/**
+ * گره‌ی رده یا خانواده.
+ *
+ * عنوان بدون پیشوند «رده:»/«خانواده:» نمایش داده می‌شود چون جایگاه گره در درخت
+ * خودش آن را می‌گوید؛ نام لاتین زیر عنوان و با جهت چپ‌به‌راست می‌آید.
+ */
 @Composable
-private fun ClassNodeRow(
-    node: TaxClassNode,
-    isExpanded: Boolean,
-    onToggle: () -> Unit
-) {
-    NodeRow(
-        title = "رده: ${node.titleFa}",
-        titleEn = node.titleEn,
-        count = node.diseases.size,
-        isExpanded = isExpanded,
-        highlighted = isExpanded,
-        indent = PdSpacing.lg,
-        tag = "tax_class_${node.key}",
-        onClick = onToggle
-    )
-}
-
-@Composable
-private fun FamilyNodeRow(
-    node: TaxFamilyNode,
-    isExpanded: Boolean,
-    onToggle: () -> Unit
-) {
-    NodeRow(
-        title = "خانواده: ${node.titleFa}",
-        titleEn = node.titleEn,
-        count = node.diseases.size,
-        isExpanded = isExpanded,
-        highlighted = isExpanded,
-        indent = PdSpacing.xxl,
-        tag = "tax_family_${node.key}",
-        onClick = onToggle
-    )
-}
-
-@Composable
-private fun NodeRow(
+private fun TreeNodeRow(
+    depth: Int,
     title: String,
-    titleEn: String?,
+    subtitle: String?,
     count: Int,
     isExpanded: Boolean,
-    highlighted: Boolean,
-    indent: Dp,
-    tag: String,
-    onClick: () -> Unit
+    onToggle: () -> Unit,
+    tag: String
 ) {
+    val railColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = indent, top = PdSpacing.tight, bottom = PdSpacing.tight)
+            .height(IntrinsicSize.Min)
             .animateContentSize(tween(PdMotion.normal))
-            .clickable(onClick = onClick)
+            .clickable(onClick = onToggle)
             .testTag(tag),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .width(2.dp)
-                .height(20.dp)
-                .clip(PdShapes.xs)
-                .background(
-                    if (highlighted) CrimsonPrimary
-                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                )
-        )
-        Spacer(modifier = Modifier.width(PdSpacing.sm))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
-            ) {
-                Text(
-                    text = title,
-                    fontSize = PdType.sp11_5,
-                    fontWeight = FontWeight.Bold,
-                    color = if (highlighted) CrimsonPrimary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(PdSize.iconSm)
-                )
-            }
-            if (!titleEn.isNullOrBlank()) {
-                PdLtrText(
-                    text = titleEn,
-                    fontSize = PdType.sp10,
-                    fontStyle = FontStyle.Italic,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(PdSpacing.sm))
-        CountBadge(count = count, highlighted = highlighted)
-    }
-}
+        TreeRail(depth = depth, color = railColor)
 
-@Composable
-private fun DiseaseRow(disease: Disease, onClick: () -> Unit) {
-    Surface(
-        shape = PdShapes.md,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = PdSpacing.huge, top = PdSpacing.xxs, bottom = PdSpacing.xxs)
-            .clickable(onClick = onClick)
-            .testTag("tax_disease_${disease.id}")
-    ) {
         Row(
-            modifier = Modifier.padding(horizontal = PdSpacing.compact, vertical = PdSpacing.sm),
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = PdSpacing.tight, horizontal = PdSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
         ) {
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                tint = if (isExpanded) CrimsonPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(PdSize.iconSm)
+            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = disease.name_fa,
-                    fontSize = PdType.sp12,
+                    text = title,
+                    fontSize = PdType.sp12_5,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = if (isExpanded) CrimsonPrimary
+                    else MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = "عامل: " + disease.agent_fa,
-                    fontSize = PdType.sp10_5,
-                    color = CrimsonPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (!disease.genus_fa.isNullOrBlank()) {
-                    // رشته‌ی mixed فارسی + لاتین در پاراگراف راست‌به‌چپ رهیده می‌شود
-                    Text(
-                        text = "سرده: " + (disease.genus_en ?: disease.genus_fa),
+                if (!subtitle.isNullOrBlank()) {
+                    PdLtrText(
+                        text = subtitle,
                         fontSize = PdType.sp10,
+                        fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+            }
+            CountBadge(count = count, highlighted = isExpanded)
+        }
+    }
+}
+
+/** گره‌ی برگ — خود پاتوژن. */
+@Composable
+private fun PathogenNodeRow(disease: Disease, onClick: () -> Unit) {
+    val railColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .clickable(onClick = onClick)
+            .testTag("tax_disease_${disease.id}"),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TreeRail(depth = 3, color = railColor)
+
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = PdSpacing.sm, horizontal = PdSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
+        ) {
+            // نشانگر برگ — نقطه‌ی کوچک به‌جای پیکان باز/بسته
+            Box(
+                modifier = Modifier
+                    .size(PdSize.treeDot)
+                    .clip(CircleShape)
+                    .background(CrimsonPrimary.copy(alpha = 0.65f))
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = disease.name_fa,
+                    fontSize = PdType.sp12,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = disease.agent_fa,
+                    fontSize = PdType.sp10_5,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             Text(
                 text = "#${disease.id}",
