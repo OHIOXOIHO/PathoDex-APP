@@ -88,7 +88,7 @@ fun SettingsScreen(
     accentId: String,
     isCompactListMode: Boolean,
     blurImages: Boolean,
-    deepLinksEnabled: Boolean = false,
+    deepLinksEnabled: Boolean = true,
     allDiseases: List<Disease>,
     isLoading: Boolean,
     isServerConnected: Boolean? = null,
@@ -554,7 +554,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(PdSpacing.xs))
                     Text(
-                        text = "اگر خاموش باشد، همان پیوندها در مرورگر وب باز می‌شوند و اپلیکیشن دست‌نخورده می‌ماند. انتخاب با شماست، نه نصب اپلیکیشن.",
+                        text = "با روشن بودن این کلید، هر بار که پیوندی از pathodex.ir باز می‌شود، انتخاب می‌کنید که در مرورگر باشد یا در اپلیکیشن. اگر خاموش باشد، همان پیوندها در مرورگر وب باز می‌شوند و اپلیکیشن دست‌نخورده می‌ماند.",
                         fontSize = PdType.sp11,
                         lineHeight = PdType.sp17,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

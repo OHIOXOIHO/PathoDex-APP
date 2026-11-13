@@ -83,7 +83,7 @@ object DeepLinks {
         }
     }
 
-    /** آیا در حال حاضر پیوندهای عمیق فعال‌اند؟ (پیش‌فرض Manifest و تنظیمات: خاموش) */
+    /** آیا در حال حاضر پیوندهای عمیق فعال‌اند؟ (پیش‌فرض Manifest و تنظیمات: فعال) */
     fun isEnabled(context: Context): Boolean {
         val state = context.packageManager.getComponentEnabledSetting(
             ComponentName(context.packageName, ALIAS_NAME)
