@@ -88,7 +88,7 @@ fun SettingsScreen(
     accentId: String,
     isCompactListMode: Boolean,
     blurImages: Boolean,
-    deepLinksEnabled: Boolean = true,
+    deepLinksEnabled: Boolean = false,
     allDiseases: List<Disease>,
     isLoading: Boolean,
     isServerConnected: Boolean? = null,

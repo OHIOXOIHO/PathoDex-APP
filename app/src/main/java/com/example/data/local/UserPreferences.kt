@@ -47,12 +47,13 @@ class UserPreferences(context: Context) {
     /**
      * آیا پیوندهای pathodex.ir در اپلیکیشن باز شوند؟
      *
-     * پیش‌فرض true است تا تجربه‌ی «پیوند عمیق» کار کند، اما کاربر می‌تواند آن را
-     * خاموش کند و همان پیوندها را در مرورگر وب ببیند. این انتخاب کاربر است، نه
+     * پیش‌فرض false است: کسی که در حال مرور سامانه‌ی وب است ترجیح می‌دهد همان‌جا
+     * بماند و پیوندها باید در مرورگر باز شوند. فقط وقتی کاربر خودش این کلید را
+     * روشن کند، پیوندها به اپلیکیشن منتقل می‌شوند. این انتخاب کاربر است، نه
      * نتیجه‌ی نصب اپلیکیشن.
      */
     var deepLinksEnabled: Boolean
-        get() = prefs.getBoolean("deep_links_enabled", true)
+        get() = prefs.getBoolean("deep_links_enabled", false)
         set(value) = prefs.edit().putBoolean("deep_links_enabled", value).apply()
 
     /**
