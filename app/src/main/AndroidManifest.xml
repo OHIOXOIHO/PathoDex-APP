@@ -32,20 +32,19 @@
             تعریف شده‌اند تا کاربر بتواند با یک کلید در تنظیمات، باز کردن
             پیوندهای pathodex.ir را به اپلیکیشن بسپارد یا نه.
 
-            autoVerify عمداً نداریم: با تأیید دامنه (assetlinks.json) اندروید
-            می‌تواند پیوند را بی‌درنگ و بدون هیچ پرسشی به اپلیکیشن بسپارد و
-            کسی که در حال مرور سامانه‌ی وب است از صفحه‌اش بیرون می‌افتد. بدون
-            تأیید، اپلیکیشن فقط یک گزینه‌ی معمولی در کنار مرورگر است و اندروید
-            هر بار می‌پرسد که کدام را باز کند — یعنی کاربر انتخاب می‌کند، نه
-            نصب اپلیکیشن.
+            پیش‌فرض خاموش است (android:enabled="false" و مقدار پیش‌فرض
+            deepLinksEnabled): کسی که در حال مرور سامانه‌ی وب است ترجیح می‌دهد
+            همان‌جا بماند و هیچ‌کس نباید بدون رضایت او صفحه را ترك کند. وقتی
+            کاربر خودش این کلید را روشن کند، autoVerify اجازه می‌دهد همان
+            پیوندها مستقیم و بدون پرسش در اپلیکیشن باز شوند.
         -->
         <activity-alias
             android:name=".DeepLink"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true"
             android:label="@string/app_name"
             android:targetActivity=".MainActivity">
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
