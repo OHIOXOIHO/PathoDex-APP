@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
@@ -24,9 +25,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.UnfoldLess
@@ -47,12 +48,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.data.model.Disease
 import com.example.data.model.TaxCategoryNode
@@ -63,6 +68,7 @@ import com.example.data.model.normalizeTaxonomyKey
 import com.example.ui.components.PdEmptyState
 import com.example.ui.components.PdLtrText
 import com.example.ui.theme.CrimsonPrimary
+import com.example.ui.theme.Pd
 import com.example.ui.theme.PdMotion
 import com.example.ui.theme.PdShapes
 import com.example.ui.theme.PdSize
@@ -181,7 +187,10 @@ fun TaxonomyScreen(
                             onToggle = {
                                 expanded[row.nodeKey] = !(expanded[row.nodeKey] ?: false)
                             },
-                            tag = "tax_class_${row.node.key}"
+                            tag = "tax_class_${row.node.key}",
+                            prefix = "رده: ",
+                            icon = Icons.Default.Layers,
+                            accent = Pd.palette.warning
                         )
 
                         is TaxEntry.Family -> TreeNodeRow(
@@ -193,7 +202,10 @@ fun TaxonomyScreen(
                             onToggle = {
                                 expanded[row.nodeKey] = !(expanded[row.nodeKey] ?: false)
                             },
-                            tag = "tax_family_${row.node.key}"
+                            tag = "tax_family_${row.node.key}",
+                            prefix = "خانواده: ",
+                            icon = Icons.Default.AccountTree,
+                            accent = Pd.palette.success
                         )
 
                         is TaxEntry.Pathogen -> PathogenNodeRow(
@@ -379,6 +391,37 @@ private fun TreeRail(depth: Int, color: Color) {
     }
 }
 
+/**
+ * پیکان باز/بسته‌ی درخت — مثل صفحه‌ی تاکسونومی سامانه‌ی وب.
+ *
+ * بسته به جهت راست‌به‌چپ، پیکان به سمت چپ می‌نشیند (جهت باز شدن شاخه‌ها) و
+ * وقتی شاخه باز است ۹- درجه می‌چرخد تا به سمت پایین نشانه بگیرد. در حالت باز
+ * رنگ برند می‌گیرد، دقیقاً مثل `tree-chevron` در وب.
+ */
+@Composable
+private fun TreeChevron(expanded: Boolean, tint: Color, modifier: Modifier = Modifier) {
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    // بسته به جهت: باز شده همیشه به سمت پایین؛ بسته در راست‌به‌چپ به سمت چپ
+    // و در چپ‌به‌راست به سمت راست — مثل tree-chevron در سامانه‌ی وب.
+    val rotation by animateFloatAsState(
+        targetValue = when {
+            expanded -> 90f
+            rtl -> 180f
+            else -> 0f
+        },
+        animationSpec = tween(PdMotion.normal),
+        label = "treeChevron"
+    )
+    Icon(
+        imageVector = Icons.Default.ChevronRight,
+        contentDescription = null,
+        tint = tint,
+        modifier = modifier
+            .size(PdSize.iconSm)
+            .rotate(rotation)
+    )
+}
+
 /** گره‌ی دسته — ریشه‌ی درخت، با کارت مشخص تا از شاخه‌ها جدا دیده شود. */
 @Composable
 private fun CategoryNodeRow(
@@ -386,6 +429,7 @@ private fun CategoryNodeRow(
     isExpanded: Boolean,
     onToggle: () -> Unit
 ) {
+    val accent = CrimsonPrimary
     Surface(
         shape = PdShapes.lg,
         color = MaterialTheme.colorScheme.surface,
@@ -402,22 +446,24 @@ private fun CategoryNodeRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
         ) {
-            Icon(
-                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = null,
-                tint = if (isExpanded) CrimsonPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(PdSize.iconMd)
+            TreeChevron(
+                expanded = isExpanded,
+                tint = if (isExpanded) accent else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = node.title,
                 fontSize = PdType.sp14,
                 fontWeight = FontWeight.Black,
-                color = if (isExpanded) CrimsonPrimary else MaterialTheme.colorScheme.onSurface,
+                color = if (isExpanded) accent else MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-            CountBadge(count = node.diseases.size, highlighted = isExpanded)
+            CountBadge(
+                count = node.diseases.size,
+                highlighted = isExpanded,
+                accent = accent
+            )
         }
     }
 }
@@ -425,8 +471,9 @@ private fun CategoryNodeRow(
 /**
  * گره‌ی رده یا خانواده.
  *
- * عنوان بدون پیشوند «رده:»/«خانواده:» نمایش داده می‌شود چون جایگاه گره در درخت
- * خودش آن را می‌گوید؛ نام لاتین زیر عنوان و با جهت چپ‌به‌راست می‌آید.
+ * هر سطح هم با پیشوند و هم با آیکون و رنگ خودش مشخص می‌شود — مثل وب:
+ * رده با آیکون لایه‌ها و رنگ کهربایی، خانواده با آیکون درخت و رنگ سبز. بدون این
+ * نشانه‌ها رده‌ها از دسته‌ها قابل‌تشخیص نیستند.
  */
 @Composable
 private fun TreeNodeRow(
@@ -436,7 +483,10 @@ private fun TreeNodeRow(
     count: Int,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    tag: String
+    tag: String,
+    prefix: String,
+    icon: ImageVector,
+    accent: Color
 ) {
     val railColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
 
@@ -458,18 +508,22 @@ private fun TreeNodeRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(PdSpacing.sm)
         ) {
+            TreeChevron(
+                expanded = isExpanded,
+                tint = if (isExpanded) accent else MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Icon(
-                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                imageVector = icon,
                 contentDescription = null,
-                tint = if (isExpanded) CrimsonPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = accent,
                 modifier = Modifier.size(PdSize.iconSm)
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title,
+                    text = prefix + title,
                     fontSize = PdType.sp12_5,
                     fontWeight = FontWeight.Bold,
-                    color = if (isExpanded) CrimsonPrimary
+                    color = if (isExpanded) accent
                     else MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -485,7 +539,7 @@ private fun TreeNodeRow(
                     )
                 }
             }
-            CountBadge(count = count, highlighted = isExpanded)
+            CountBadge(count = count, highlighted = isExpanded, accent = accent)
         }
     }
 }
@@ -547,17 +601,17 @@ private fun PathogenNodeRow(disease: Disease, onClick: () -> Unit) {
 }
 
 @Composable
-private fun CountBadge(count: Int, highlighted: Boolean) {
+private fun CountBadge(count: Int, highlighted: Boolean, accent: Color = CrimsonPrimary) {
     Surface(
         shape = CircleShape,
-        color = if (highlighted) CrimsonPrimary.copy(alpha = 0.16f)
+        color = if (highlighted) accent.copy(alpha = 0.16f)
         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
     ) {
         Text(
             text = count.toString(),
             fontSize = PdType.sp10_5,
             fontWeight = FontWeight.Bold,
-            color = if (highlighted) CrimsonPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (highlighted) accent else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = PdSpacing.sm, vertical = PdSpacing.xxs)
         )
     }
