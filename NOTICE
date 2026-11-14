@@ -1,0 +1,29 @@
+# NOTICE — content rights and disclaimer
+
+## Content is not covered by the code licence
+
+The MIT Licence in this repository applies **only to the source code**.
+
+The medical content displayed by the application — pathogen names, clinical
+dossiers, taxonomy, flashcards, quiz questions and images — is **© PathoDex**.
+It is served at runtime from [pathodex.ir](https://pathodex.ir) and is **not**
+licensed under the MIT Licence. You may not reuse, republish or redistribute it
+outside the application without written permission.
+
+No content database is shipped in this repository; the application downloads it
+from the PathoDex service.
+
+## Third-party components
+
+This application is built with Jetpack Compose and other AndroidX libraries,
+which are licensed by Google under the Apache License 2.0. Vazirmatn is used for
+the Persian typeface and is licensed under the SIL Open Font License 1.1.
+
+## Not medical advice
+
+PathoDex is an **educational reference** for medical students and clinicians. It
+is not a medical device, and it does not provide diagnosis or treatment
+recommendations for individual patients.
+
+Always verify information against current clinical guidelines and primary
+sources. Never make clinical decisions based solely on this application.
