@@ -1,118 +1,100 @@
-# PathoDex — Android App
+# پاتودکس — اپلیکیشن اندروید
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-6C5CE7.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Android-10B981.svg)](https://developer.android.com)
+> **PathoDex — Android app**
+> An Android client for [pathodex.ir](https://pathodex.ir), a Persian reference for
+> pathogens with clinical dossiers, flashcards and self-assessment.
 
-اپلیکیشن اندروید سامانه‌ی **PathoDex** — مرجع تخصصی عوامل بیماری‌زا با پرونده‌ی بالینی
-کامل، فلش‌کارت، خودآزمایی و مقایسه‌ی تطبیقی.
+با این برنامه پرونده‌ی بالینی عوامل بیماری‌زا را روی گوشی می‌خوانید، فلش‌کارت
+می‌زنید و خودآزمایی می‌کنید. محتوایش همان محتوای سایت است؛ بار اول با اینترنت
+دریافت می‌شود و بعدش روی دستگاه می‌ماند، آن‌وقت حتی بدون اینترنت هم کار می‌کند.
 
-An Android client for **PathoDex**, a Persian medical reference for pathogens: full
-clinical dossiers, flashcards, self-assessment and side-by-side comparison.
+این مخزن فقط کد اپلیکیشن را دارد. پرونده‌های پزشکی از سرور پاتودکس گرفته
+می‌شوند و در مخزن نیستند. مجوز آن محتوا هم جدا از مجوز کد است؛ [NOTICE](NOTICE)
+را ببینید.
 
-The app is a client of the PathoDex service at [pathodex.ir](https://pathodex.ir) —
-it fetches its content from the public API and caches it for offline reading. The
-medical content itself is **not** part of this repository; see [NOTICE](NOTICE).
+## تصاویر
 
----
+| فهرست پاتوژن‌ها | جستجوی خطاپذیر |
+|---|---|
+| ![فهرست پاتوژن‌ها](docs/images/explorer.png) | ![جستجوی خطاپذیر](docs/images/search.png) |
 
-## Features
+| پرونده‌ی بالینی | درخت تاکسونومی |
+|---|---|
+| ![پرونده‌ی بالینی](docs/images/dossier.png) | ![درخت تاکسونومی](docs/images/taxonomy.png) |
 
-- **Full clinical dossier** for every pathogen — epidemiology, signs, pathogenesis,
-  diagnosis, treatment, prevention and prognosis, with a fast section jump bar.
-- **Taxonomy explorer** — Category › Class › Family › Pathogen as a collapsible tree,
-  with search and per-level counts.
-- **Flashcards and self-assessment** with a learning state and progress tracking.
-- **Side-by-side comparison** of any number of pathogens.
-- **Typo-tolerant search** for both Persian and English — normalises Arabic/Persian
-  letter variants, missing ZWNJ, and matches phonetic transliteration variants
-  (`سفلیس` / `سیفلیس` → `سیفیلیس`), plus edit-distance and Jaro-Winkler matching.
-- **Google sign-in** (Credential Manager) and username/password sign-in.
-- **Deep links** to pathodex.ir dossiers (off by default; enable in Settings).
-- **Offline reading** — the pathogen list and dossiers are cached on device.
-- Fully **right-to-left**, built with Jetpack Compose.
+| فلش‌کارت | درباره‌ی سامانه |
+|---|---|
+| ![فلش‌کارت](docs/images/study.png) | ![درباره‌ی سامانه](docs/images/about.png) |
 
-## Building
+تصویر دوم جستجوی «سفلیس» است که همان لحظه‌ی تایپ به پرونده‌ی سیفیلیس می‌رسد،
+نه تنها وقتی کلمه کامل شود.
 
-Requirements:
+## نصب
 
-- JDK 21
-- Android SDK (compileSdk 36)
-- Gradle 9.x
+نسخه‌ی أحدث را از [صفحه‌ی نسخه‌ها](https://github.com/OHIOXOIHO/PathoDex-APP/releases)
+بردارید و نصب کنید. اندروید هنگام نصب مستقیم یک هشدار می‌دهد؛ این هشدار
+Play Protect است، نه مشکل امنیتی. پیام «برنامه مسدود شد» هم همین است.
 
-```bash
-export JAVA_HOME=/path/to/jdk-21
-export ANDROID_HOME=/path/to/android-sdk
-export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH"
-
-gradle assembleDebug        # app/build/outputs/apk/debug/
-gradle assembleRelease      # requires a release keystore, see below
-gradle testDebugUnitTest    # unit tests
-```
-
-### Signing
-
-The app uses application id `pathodex.ir`. Debug builds are signed with the standard
-Android `debug.keystore`. Release builds expect a keystore at `${rootDir}/my-upload-key.jks`
-with alias `upload`, supplied through the `KEYSTORE_PATH`, `STORE_PASSWORD` and
-`KEY_PASSWORD` environment variables — the password is never committed.
-
-To enable Google sign-in on a given build, that build's signing certificate must be
-registered in the Google Cloud project as an **Android** OAuth client for package
-`pathodex.ir`. The app itself always uses the web client id, which is a public value.
-
-## Contributing
-
-Contributions are welcome — see [CONTRIBUTING](CONTRIBUTING.md). Please open an issue
-first for anything non-trivial.
-
-## Licence
-
-The **code** in this repository is released under the [MIT Licence](LICENSE).
-
-The **medical content** displayed by the app is a separate rights grant: it is
-© PathoDex and is served from [pathodex.ir](https://pathodex.ir). It is **not**
-covered by the MIT Licence. See [NOTICE](NOTICE) for details and for the medical
-disclaimer.
-
----
-
-## ویژگی‌ها
-
-- **پرونده‌ی بالینی کامل** هر عامل بیماری‌زا با نوار «دسترسی سریع به بخش‌ها».
-- **درخت تاکسونومی** دسته › رده › خانواده › پاتوژن با جستجو و شمارش در هر سطح.
-- **فلش‌کارت و خودآزمایی** با شرح یادگیری و پیشرفت.
-- **مقایسه‌ی تطبیقی** چند پاتوژن کنار هم.
-- **جستجوی خطاپذیر** فارسی و انگلیسی: یکدست‌سازی حروف عربی/فارسی، نیم‌فاصله‌ی جاافتاده
-  و تطبیق واریانت‌های ترجمه‌ی صوتی (`سفلیس` / `سیفلیس` → `سیفیلیس`).
-- **ورود با گوگل** (Credential Manager) و ورود با نام‌کاربری و رمز عبور.
-- **پیوندهای عمیق** pathodex.ir — به‌صورت پیش‌فرض خاموش؛ در تنظیمات فعال می‌شود.
-- **مطالعه‌ی آفلاین** — فهرست پاتوژن‌ها و پرونده‌ها روی دستگاه ذخیره می‌شوند.
-- کاملاً **راست‌به‌چپ** و ساخته‌شده با Jetpack Compose.
+برای ورود با گوگل در نسخه‌ی رلیز، اثرانگشت گواهی امضای آن نسخه باید در
+Google Cloud به‌عنوان OAuth Client از نوع Android ثبت شده باشد.
 
 ## ساخت
 
-پیش‌نیازها: JDK 21، Android SDK (compileSdk 36) و Gradle 9.x.
+به JDK 21، Android SDK (compileSdk 36) و Gradle 9 نیاز دارید.
 
 ```bash
 export JAVA_HOME=/path/to/jdk-21
 export ANDROID_HOME=/path/to/android-sdk
 export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH"
 
-gradle assembleDebug          # خروجی: app/build/outputs/apk/debug/
-gradle testDebugUnitTest      # آزمون‌های واحد
+gradle assembleDebug          # app/build/outputs/apk/debug/
+gradle testDebugUnitTest      # ۵۱ آزمون واحد
 ```
 
-## امضا
+نسخه‌ی دیباگ با `debug.keystore` امضا می‌شود. برای رلیز، کلید را از طریق
+متغیرهای `KEYSTORE_PATH`، `STORE_PASSWORD` و `KEY_PASSWORD` به گرادل می‌دهیم؛
+گذرواژه در مخزن ثبت نمی‌شود و کلید هم باید بیرون از مخزن نگه داشته شود.
 
-اپلیکیشن با نام بسته‌ی `pathodex.ir` ساخته می‌شود. نسخه‌ی دیباگ با `debug.keystore`
-امضا می‌شود و نسخه‌ی رلیز با کلید رلیز (alias `upload`) که از متغیرهای محیطی
-`KEYSTORE_PATH`، `STORE_PASSWORD` و `KEY_PASSWORD` خوانده می‌شود. گذرواژه هرگز در
-مخزن ثبت نمی‌شود.
+## برای کسی که می‌خواهد فورک کند
+
+فورک کردن معمولی است. بعد از فورک، دو جا را عوض کنید تا برنامه به سرور خودتان
+برود:
+
+- `app/src/main/java/com/example/data/api/ApiClient.kt` مقدار `BASE_URL`
+- `app/src/main/java/com/example/data/model/Disease.kt` مقدار `HOST`
+
+اگر نمی‌خواهید به سرور دیگری وصل شود، کافی است یک API ساده ارائه دهید که
+پاسخ `/api/diseases` را بدهد. ساختار پاسخ در `Disease.kt` توصیف شده.
+
+## چیزهایی که شاید برایتان جالب باشد
+
+**جستجوی خطاپذیر** (`data/model/SearchMatcher.kt`). کاربر معمولاً حروف عربی
+را به‌جای فارسی می‌نویسد، نیم‌فاصله را فراموش می‌کند، یا اسم لاتین را اشتباه
+می‌نویسد. این لایه حروف ي/ی و ك/ک را یکدست می‌کند و نیم‌فاصله‌ی جاافتاده را
+دربیاورد، بعد با فاصله‌ی ویرایش، شباهت جارو-وینکلر و زیروالی‌بودن تطبیق
+می‌دهد. «سفلیس» و «سیفلیس» هر دو به سیفیلیس می‌رسند. همین منطق در نسخه‌ی وب
+پیاده‌شده تا دو محصول رفتار یکسانی داشته باشند. آزمون‌های واحد هم همین‌جا هستند.
+
+**طراحی متمرکز.** رنگ‌ها، فاصله‌ها و اندازه‌های فونت همه در لایه‌ی تم
+(`ui/theme`) تعریف شده‌اند. در صفحه‌ها رنگ یا فاصله‌ی ثابت نگذارید.
+
+**راست‌به‌چپ.** چیدمان به‌صورت اجباری RTL است چون محتوا فارسی است. اسم‌های
+لاتین هم در یک container مجزای LTR نمایش داده می‌شوند.
+
+## همکاری
+
+قبل از کار جدی، یک ایشو باز کنید تا سر راه هم برویم. برای تغییر محتوای
+پزشکی به سایت پاتودکس مراجعه کنید، چون این مخزن محتوا ندارد.
+[CONTRIBUTING](CONTRIBUTING.md) را ببینید.
 
 ## مجوز
 
-**کد** این مخزن تحت [مجوز MIT](LICENSE) منتشر شده است.
+کد این مخزن تحت [مجوز MIT](LICENSE) است.
 
-**محتوای پزشکی** که اپلیکیشن نمایش می‌دهد حق تألیف جداگانه‌ای است: متعلق به
-پاتودکس بوده و از [pathodex.ir](https://pathodex.ir) ارائه می‌شود و شامل مجوز MIT
-نمی‌شود. برای جزئیات و سلب مسئولیت پزشکی [NOTICE](NOTICE) را ببینید.
+محتوای پزشکی که برنامه نشان می‌دهد حق تألیف جداگانه‌ای است و شامل مجوز MIT
+نمی‌شود. جزئیات و سلب مسئولیت پزشکی در [NOTICE](NOTICE) نوشته شده.
+
+## سلب مسئولیت
+
+پاتودکس ابزار آموزشی برای دانشجویان و پزشکان است، نه دستگاه پزشکی. برای
+تصمیم‌گیری بالینی به راهنماهای جاری و منابع اولیه مراجعه کنید.
