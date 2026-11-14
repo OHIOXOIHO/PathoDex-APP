@@ -140,11 +140,12 @@ object SearchMatcher {
     /**
      * واریانت‌های ترجمه‌ی صوتی: «سفلیس» زیروالی صی «سیفیلیس» است.
      * فقط وقتی صدق می‌کند که طولشان خیلی متفاوت نباشد تا مثبت کاذب نگیرد.
+     * آستانه ۰٫۵۵ است تا نشانی‌های ناقص هم هنگام تایپ نتیجه بدهند («سفلی»).
      */
     fun subseqMatch(a: String, b: String): Boolean {
         val short = if (a.length <= b.length) a else b
         val long = if (a.length <= b.length) b else a
-        if (short.length < 4 || short.length.toDouble() / long.length < 0.7) return false
+        if (short.length < 4 || short.length.toDouble() / long.length < 0.55) return false
         return isSubsequence(short, long)
     }
 

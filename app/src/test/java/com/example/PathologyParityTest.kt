@@ -313,6 +313,7 @@ class PathologyParityTest {
     @Test
     fun `search tolerates Persian transliteration variants`() {
         val d = disease(id = 51, nameFa = "سیفیلیس", genusEn = "Treponema")
+        assertTrue(matchesQuery(d, "سفلی"))
         assertTrue(matchesQuery(d, "سیفلیس"))
         assertTrue(matchesQuery(d, "سفلیس"))
         assertTrue(matchesQuery(d, "سیفلس"))
