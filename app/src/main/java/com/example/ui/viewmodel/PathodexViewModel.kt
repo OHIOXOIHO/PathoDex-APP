@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.model.Disease
+import com.example.data.model.SearchMatcher
 import com.example.data.model.TaxonomyRefs
 import com.example.data.model.User
 import com.example.data.repository.PathodexRepository
@@ -234,8 +235,8 @@ class PathodexViewModel(application: Application) : AndroidViewModel(application
         ).joinToString(" ").lowercase()
     }
 
-    private val searchIndex: StateFlow<Map<Int, String>> = allDiseases
-        .map { list -> list.associate { it.id to searchPoolFor(it) } }
+    private val searchIndex: StateFlow<Map<Int, SearchMatcher.IndexedPool>> = allDiseases
+        .map { list -> list.associate { it.id to SearchMatcher.indexPool(searchPoolFor(it)) } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     // Filtered Diseases
@@ -246,10 +247,22 @@ class PathodexViewModel(application: Application) : AndroidViewModel(application
         taxFilterFlow
     ) { diseases, index, filter, tax ->
         var list = diseases
+        var relevanceOrdered = false
 
         if (filter.query.isNotBlank()) {
-            val q = filter.query.trim().lowercase()
-            list = list.filter { d -> index[d.id]?.contains(q) == true }
+            // جستجوی خطاپذیر (فارسی و انگلیسی) با نرمال‌سازی حروف، نیم‌فاصله و
+            // تطبیق گذری؛ نتایج مرتبط اول می‌آیند — مثل سامانه‌ی وب.
+            val prepared = SearchMatcher.prepareQuery(filter.query)
+            if (!prepared.empty) {
+                val scored = mutableListOf<Pair<Disease, Int>>()
+                for (d in list) {
+                    val pool = index[d.id] ?: continue
+                    val result = SearchMatcher.matchPrepared(prepared, pool)
+                    if (result.match) scored.add(d to result.score)
+                }
+                list = scored.sortedByDescending { it.second }.map { it.first }
+                relevanceOrdered = true
+            }
         }
 
         if (filter.category != "all") {
@@ -278,10 +291,12 @@ class PathodexViewModel(application: Application) : AndroidViewModel(application
             }
         }
 
-        list = when (filter.sort) {
-            SortOrder.NAME_ASC -> list.sortedBy { it.name_fa }
-            SortOrder.AGENT_ASC -> list.sortedBy { it.agent_fa }
-            SortOrder.DATE_DESC -> list.sortedByDescending { it.id }
+        if (!relevanceOrdered) {
+            list = when (filter.sort) {
+                SortOrder.NAME_ASC -> list.sortedBy { it.name_fa }
+                SortOrder.AGENT_ASC -> list.sortedBy { it.agent_fa }
+                SortOrder.DATE_DESC -> list.sortedByDescending { it.id }
+            }
         }
 
         list

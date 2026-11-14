@@ -32,6 +32,7 @@ class PathologyParityTest {
 
     private fun disease(
         id: Int,
+        nameFa: String? = null,
         genus: String? = null,
         genusEn: String? = null,
         family: String? = null,
@@ -46,7 +47,7 @@ class PathologyParityTest {
     ) = Disease(
         id = id,
         category = category,
-        name_fa = "پاتوژن $id",
+        name_fa = nameFa ?: "پاتوژن $id",
         name_en = "Pathogen $id",
         agent_fa = "عامل $id",
         agent_en = agentEn,
@@ -307,6 +308,45 @@ class PathologyParityTest {
         assertTrue(matchesQuery(d, "باسيلوس"))
         assertTrue(matchesQuery(d, "باسیلوس"))
         assertFalse(matchesQuery(d, "xxx"))
+    }
+
+    @Test
+    fun `search tolerates Persian transliteration variants`() {
+        val d = disease(id = 51, nameFa = "سیفیلیس", genusEn = "Treponema")
+        assertTrue(matchesQuery(d, "سیفلیس"))
+        assertTrue(matchesQuery(d, "سفلیس"))
+        assertTrue(matchesQuery(d, "سیفلس"))
+        assertTrue(matchesQuery(d, "سیفیلیس"))
+    }
+
+    @Test
+    fun `search tolerates English spelling mistakes`() {
+        val d = disease(id = 1, genusEn = "Staphylococcus", agentEn = "Staphylococcus aureus")
+        assertTrue(matchesQuery(d, "Stafilococcus"))
+        assertTrue(matchesQuery(d, "staph"))
+        assertTrue(matchesQuery(d, "aureos"))
+        assertFalse(matchesQuery(d, "xyz"))
+    }
+
+    @Test
+    fun `search ignores a missing ZWNJ`() {
+        val d = disease(id = 2, nameFa = "می‌شود")
+        assertTrue(matchesQuery(d, "میشود"))
+        assertTrue(matchesQuery(d, "می شود"))
+    }
+
+    @Test
+    fun `search does not return unrelated records`() {
+        val d = disease(id = 3, nameFa = "سیفیلیس")
+        assertFalse(matchesQuery(d, "گلوما"))
+        assertFalse(matchesQuery(d, "ززززززززززز"))
+    }
+
+    @Test
+    fun `every query word must match`() {
+        val d = disease(id = 4, nameFa = "آنفلوانزای C", category = "ویروس‌ها")
+        assertTrue(matchesQuery(d, "ویروس انفلوانزا"))
+        assertFalse(matchesQuery(d, "ویروس گلوما"))
     }
 
     @Test

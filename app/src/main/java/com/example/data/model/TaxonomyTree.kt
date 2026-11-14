@@ -186,11 +186,11 @@ fun cleanClassName(raw: String?): String {
 
 /** تطبیق جستجو روی همه‌ی نام‌های تاکسونومیک و نام پاتوژن — مثل وب. */
 fun matchesQuery(d: Disease, query: String): Boolean {
-    val q = normalizeTaxonomyKey(query)
-    if (q.isBlank()) return true
+    val prepared = SearchMatcher.prepareQuery(query)
+    if (prepared.empty) return true
     val pool = listOf(
         d.category, d.class_fa, d.class_en, d.family_fa, d.family_en,
         d.genus_fa, d.genus_en, d.name_fa, d.name_en, d.agent_fa, d.agent_en
-    ).joinToString(" ") { normalizeTaxonomyKey(it) }
-    return pool.contains(q)
+    ).joinToString(" ")
+    return SearchMatcher.matchPrepared(prepared, SearchMatcher.indexPool(pool)).match
 }
