@@ -16,12 +16,12 @@ android {
     applicationId = "pathodex.ir"
     minSdk = 24
     targetSdk = 36
-    versionCode = 2
+    versionCode = 3
 
     // شناسه‌ی عمومی کارخواه وب گوگل (همان که در سایت استفاده می‌شود).
     // این مقدار عمومی است و در مرورگر کاربران هم دیده می‌شود.
     buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"421737692937-a5kjf4vk2kigcpuen11u6m23jqqt61if.apps.googleusercontent.com\"")
-    versionName = "2.03"
+    versionName = "2.03.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

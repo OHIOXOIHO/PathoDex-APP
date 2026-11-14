@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.data.model.Disease
+import com.example.data.model.SearchMatcher
 import com.example.ui.theme.CrimsonPrimary
 import com.example.ui.theme.PdShapes
 import com.example.ui.theme.PdSpacing
@@ -91,15 +92,20 @@ fun CompareScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val filteredPickerDiseases = remember(pickerSearchQuery, allDiseases) {
-        if (pickerSearchQuery.isBlank()) allDiseases
-        else {
-            val q = pickerSearchQuery.trim().lowercase()
-            allDiseases.filter {
-                it.name_fa.lowercase().contains(q) ||
-                        it.agent_fa.lowercase().contains(q) ||
-                        it.category.lowercase().contains(q) ||
-                        (it.name_en?.lowercase()?.contains(q) == true)
+        // جستجوی خطاپذیر، مثل بقیه‌ی صفحه‌ها و سامانه‌ی وب
+        val prepared = SearchMatcher.prepareQuery(pickerSearchQuery)
+        if (prepared.empty) {
+            allDiseases
+        } else {
+            val scored = allDiseases.mapNotNull { d ->
+                val pool = listOfNotNull(
+                    d.name_fa, d.name_en, d.agent_fa, d.agent_en, d.category,
+                    d.family_fa, d.family_en, d.class_fa, d.class_en, d.genus_fa, d.genus_en
+                ).joinToString(" ")
+                val result = SearchMatcher.matchPrepared(prepared, SearchMatcher.indexPool(pool))
+                if (result.match) d to result.score else null
             }
+            scored.sortedByDescending { it.second }.map { it.first }
         }
     }
 
